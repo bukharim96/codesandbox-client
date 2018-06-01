@@ -16,8 +16,8 @@
     "build:clean": "rimraf www",
     "test": "jest --env=jsdom",
     "test:watch": "jest --watch --env=jsdom",
-    "lint": "npm run lint:desktop-app && npm run lint:embed",
-    "lint:desktop-app": "eslint src/desktop-app",
+    "lint": "npm run lint:app && npm run lint:embed",
+    "lint:app": "eslint src/app",
     "lint:embed": "eslint src/embed",
     "typecheck": "flow check"
   },
