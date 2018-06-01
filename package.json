@@ -31,6 +31,7 @@
   "workspaces": [
     "packages/homepage",
     "packages/app",
+    "packages/desktop-app",
     "packages/common",
     "packages/codesandbox-api",
     "packages/sandpack",
