@@ -3126,7 +3126,7 @@ browser-process-hrtime@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/browser-process-hrtime/-/browser-process-hrtime-0.1.2.tgz#425d68a58d3447f02a04aa894187fce8af8b7b8e"
 
-browser-resolve@CompuIves/node-browser-resolve:
+browser-resolve@CompuIves/node-browser-resolve, "browser-resolve@github:CompuIves/node-browser-resolve":
   version "1.11.5"
   resolved "https://codeload.github.com/CompuIves/node-browser-resolve/tar.gz/0da48af3db28326db85de9aece5c72b9477da5f3"
   dependencies:
@@ -8903,7 +8903,7 @@ https-proxy-agent@^1.0.0:
     debug "2"
     extend "3"
 
-humps@CompuIves/humps:
+humps@CompuIves/humps, "humps@github:CompuIves/humps":
   version "2.0.0"
   resolved "https://codeload.github.com/CompuIves/humps/tar.gz/7ee34e874c808cf60e7119ee71ac71b8bf2189b7"
 
@@ -12415,7 +12415,7 @@ moment@^2.6.0:
   version "2.20.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.20.1.tgz#d6eb1a46cbcc14a2b2f9434112c1ff8907f313fd"
 
-monaco-editor@CompuIves/codesandbox-monaco-editor:
+monaco-editor@CompuIves/codesandbox-monaco-editor, "monaco-editor@github:CompuIves/codesandbox-monaco-editor":
   version "0.9.0"
   resolved "https://codeload.github.com/CompuIves/codesandbox-monaco-editor/tar.gz/e4e1efb582934ffd8fb135b1cfa1af82cdbc85e3"
   dependencies:
