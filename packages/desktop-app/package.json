@@ -5,7 +5,7 @@
   "description": "CodeSandbox - Desktop app work-space extension",
   "author": "@bukharim96 <bukharim96@gmail.com>",
   "private": true,
-  "main": "index.js",
+  "main": "./scripts/electron-main.js",
   "scripts": {
     "start": "cross-env LOCAL_SERVER=1 node scripts/start.js",
     "start:sandbox": "cross-env SANDBOX_ONLY=true node scripts/start.js",
