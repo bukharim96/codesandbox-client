@@ -11,7 +11,7 @@ import Loading from '../../../../app/src/app/components/Loading';
 import send, { DNT } from 'common/utils/analytics';
 
 import Modals from '../../../../app/src/app/pages/common/Modals';
-import Sandbox from '../../../../app/src/app/pages/Sandbox';
+import Sandbox from './Sandbox';
 import NewSandbox from './NewSandbox';
 import { Container, Content } from '../../../../app/src/app/pages/elements';
 
