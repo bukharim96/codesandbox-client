@@ -17,6 +17,8 @@ class NewSandboxComponent extends React.PureComponent {
   }
 
   render() {
+    let props = this.props;
+
     return (
       <MaxWidth>
         <Margin style={{ height: '100%' }} vertical={1.5} horizontal={1.5}>
@@ -27,11 +29,11 @@ class NewSandboxComponent extends React.PureComponent {
                 <Button
                   big
                   onClick={() => {
-                    this.props.signals.modalOpened({
+                    props.signals.modalOpened({
                       modal: 'newSandbox',
                     });
                   }}
-                  {...this.props}
+                  {...props}
                 >
                   <Row>
                     <PlusIcon height={55} style={{ marginRight: '0.5rem' }} />{' '}
