@@ -1,8 +1,4 @@
-const electron = require('electron');
-// Module to control application life.
-const app = electron.app;
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow;
+const { app, BrowserWindow, Menu } = require('electron');
 
 const path = require('path');
 const url = require('url');
@@ -13,16 +9,16 @@ let mainWindow;
 
 function createWindow() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({ width: 1200, height: 600 });
+  mainWindow = new BrowserWindow({ width: 960, height: 600 });
 
   // and load the index.html of the app.
   mainWindow.loadURL('http://localhost:3000');
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   // mainWindow.setFullScreen(true)
-  mainWindow.maximize();
+  // mainWindow.maximize();
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
@@ -55,5 +51,33 @@ app.on('activate', function() {
   }
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+// // Menu
+// const template = [
+//   {
+//     label: 'File'
+//   },
+//   {
+//     label: 'Preferences'
+//   },
+//   {
+//     label: 'Fork'
+//   },
+//   {
+//     label: 'Share'
+//   },
+//   {
+//     label: 'Sign In'
+//   },
+//   {
+//     role: 'help',
+//     submenu: [
+//       {
+//         label: 'Learn More',
+//         click () { require('electron').shell.openExternal('https://electronjs.org') }
+//       }
+//     ]
+//   }
+// ]
+
+// const menu = Menu.buildFromTemplate(template)
+// Menu.setApplicationMenu(menu)
