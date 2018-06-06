@@ -17,10 +17,11 @@ var config = require('../config/webpack.dev');
 var paths = require('../config/paths');
 
 // Run and build desktop-app
+var DESKTOP_APP_RUNNING = false;
 function runDesktopApp() {
   exec('yarn electron .', (err, stdout, stderr) => {
     if (err) {
-      console.log(`Desktop app build failed: ${stderr}`);
+      console.log(chalk.red('Desktop app build failed: ') + stderr);
       return;
     }
 
@@ -102,7 +103,19 @@ function setupCompiler(port, protocol) {
       console.log();
 
       // Run desktop-app if 'start:desktop' is run
-      if (process.env.RUN_DESKTOP_APP) runDesktopApp();
+      if (process.env.RUN_DESKTOP_APP) {
+        console.log();
+        console.log('  ' + chalk.cyan('Running desktop-app...'));
+
+        if (!DESKTOP_APP_RUNNING) {
+          runDesktopApp();
+
+          DESKTOP_APP_RUNNING = true;
+        } else {
+          // @todo force refresh the app
+          // console.log(chalk.cyan('Refreshed desktop-app...'));
+        }
+      }
 
       return;
     }
