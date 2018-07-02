@@ -38,20 +38,34 @@ export function setUrlOptions({ state, router, utils }) {
 
   if (options.currentModule) {
     const sandbox = state.get('editor.currentSandbox');
-    const module = utils.resolveModule(
-      options.currentModule,
-      sandbox.modules,
-      sandbox.directories,
-      options.currentModule.directoryShortid
-    );
 
-    if (module) {
-      state.push('editor.tabs', {
-        type: 'module',
-        moduleShortid: module.shortid,
-        dirty: false,
+    try {
+      const module = utils.resolveModule(
+        options.currentModule,
+        sandbox.modules,
+        sandbox.directories,
+        options.currentModule.directoryShortid
+      );
+
+      if (module) {
+        state.push('editor.tabs', {
+          type: 'module',
+          moduleShortid: module.shortid,
+          dirty: false,
+        });
+        state.set('editor.currentModuleShortid', module.shortid);
+      }
+    } catch (err) {
+      const now = Date.now();
+      const title = `Could not find the module ${options.currentModule}`;
+
+      state.push('notifications', {
+        title,
+        id: now,
+        notificationType: 'warning',
+        endTime: now + 2000,
+        buttons: [],
       });
-      state.set('editor.currentModuleShortid', module.shortid);
     }
   }
 
@@ -84,7 +98,7 @@ export function setUrlOptions({ state, router, utils }) {
   if (options.forceRefresh)
     state.set('preferences.settings.forceRefresh', options.forceRefresh);
   if (options.expandDevTools)
-    state.set('preferences.showConsole', options.expandDevTools);
+    state.set('preferences.showDevtools', options.expandDevTools);
   if (options.runOnClick)
     state.set(`preferences.runOnClick`, options.runOnClick);
 }
@@ -278,6 +292,10 @@ export function removeJwtFromStorage({ jwt }) {
   jwt.reset();
 }
 
+export function setSignedInCookie() {
+  document.cookie = 'signedIn=true; Path=/;';
+}
+
 export function listenToConnectionChange({ connection }) {
   connection.addListener('connectionChanged');
 }
@@ -347,4 +365,15 @@ export function createPackageJSON({ props }) {
     title: 'package.json',
     newCode: code,
   };
+}
+
+export function getContributors({ state }) {
+  return window
+    .fetch(
+      'https://raw.githubusercontent.com/CompuIves/codesandbox-client/master/.all-contributorsrc'
+    )
+    .then(x => x.json())
+    .then(x => x.contributors.map(u => u.login))
+    .then(names => state.set('contributors', names))
+    .catch(() => {});
 }

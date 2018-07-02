@@ -32,11 +32,18 @@ class ModuleSource {
   fileName: string;
   compiledCode: string;
   sourceMap: ?SourceMap;
+  sourceEqualsCompiled: boolean;
 
-  constructor(fileName: string, compiledCode: string, sourceMap: ?SourceMap) {
+  constructor(
+    fileName: string,
+    compiledCode: string,
+    sourceMap: ?SourceMap,
+    sourceEqualsCompiled = false
+  ) {
     this.fileName = fileName;
     this.compiledCode = compiledCode;
     this.sourceMap = sourceMap;
+    this.sourceEqualsCompiled = sourceEqualsCompiled;
   }
 }
 
@@ -44,6 +51,7 @@ export type SerializedTranspiledModule = {
   module: Module,
   query: string,
   source: ?ModuleSource,
+  sourceEqualsCompiled: boolean,
   assets: {
     [name: string]: ModuleSource,
   },
@@ -300,6 +308,7 @@ export default class TranspiledModule {
   shouldTranspile() {
     return (
       !this.source &&
+      !this.isTestFile &&
       !(this.initiators.size === 0 && this.transpilationInitiators.size > 0)
     );
   }
@@ -593,13 +602,21 @@ export default class TranspiledModule {
       }
     }
 
-    // Add the source of the file by default, this is important for source mapping
-    // errors back to their origin
-    code = `${code}\n//# sourceURL=${location.origin}${this.module.path}${
+    const sourceEqualsCompiled = code === this.module.code;
+    const sourceURL = `//# sourceURL=${location.origin}${this.module.path}${
       this.query ? `?${this.hash}` : ''
     }`;
 
-    this.source = new ModuleSource(this.module.path, code, finalSourceMap);
+    // Add the source of the file by default, this is important for source mapping
+    // errors back to their origin
+    code = `${code}\n${sourceURL}`;
+
+    this.source = new ModuleSource(
+      this.module.path,
+      code,
+      finalSourceMap,
+      sourceEqualsCompiled
+    );
 
     if (
       this.previousSource &&
@@ -713,7 +730,7 @@ export default class TranspiledModule {
       ) {
         return this.compilation.exports;
       }
-    } else if (this.compilation && this.compilation.exports) {
+    } else if (this.compilation && this.compilation.exports && !this.isEntry) {
       return this.compilation.exports;
     }
 
@@ -798,7 +815,8 @@ export default class TranspiledModule {
     try {
       // eslint-disable-next-line no-inner-declarations
       function require(path: string) {
-        const bfsModule = BrowserFS.BFSRequire(path);
+        const usedPath = manager.getPresetAliasedPath(path);
+        const bfsModule = BrowserFS.BFSRequire(usedPath);
 
         if (bfsModule) {
           return bfsModule;
@@ -882,20 +900,22 @@ export default class TranspiledModule {
   }
 
   postEvaluate(manager: Manager) {
-    if (!manager.webpackHMR) {
-      // For non cacheable transpilers we remove the cached evaluation
-      if (
-        manager.preset
-          .getLoaders(this.module, this.query)
-          .some(t => !t.transpiler.cacheable)
-      ) {
-        this.compilation = null;
-      }
+    // Question: do we need to disable this for HMR projects?
+    // For non cacheable transpilers we remove the cached evaluation
+    if (
+      manager.preset
+        .getLoaders(this.module, this.query)
+        .some(t => !t.transpiler.cacheable)
+    ) {
+      this.compilation = null;
     }
   }
 
   serialize(): SerializedTranspiledModule {
     const serializableObject = {};
+
+    const sourceEqualsCompiled =
+      this.source && this.source.sourceEqualsCompiled;
 
     serializableObject.query = this.query;
     serializableObject.assets = this.assets;
@@ -903,7 +923,10 @@ export default class TranspiledModule {
     serializableObject.emittedAssets = this.emittedAssets;
     serializableObject.isEntry = this.isEntry;
     serializableObject.isTestFile = this.isTestFile;
-    serializableObject.source = this.source;
+    if (!sourceEqualsCompiled) {
+      serializableObject.source = this.source;
+    }
+    serializableObject.sourceEqualsCompiled = sourceEqualsCompiled;
     serializableObject.childModules = this.childModules.map(m => m.getId());
     serializableObject.dependencies = Array.from(this.dependencies).map(m =>
       m.getId()
@@ -941,9 +964,23 @@ export default class TranspiledModule {
     this.emittedAssets = data.emittedAssets;
     this.isEntry = data.isEntry;
     this.isTestFile = data.isTestFile;
-    this.source = data.source;
 
-    const loadModule = (depId: string, initiator = false) => {
+    if (data.sourceEqualsCompiled) {
+      this.source = new ModuleSource(
+        this.module.path,
+        this.module.code,
+        null,
+        true
+      );
+    } else {
+      this.source = data.source;
+    }
+
+    const loadModule = (
+      depId: string,
+      initiator = false,
+      transpilation = false
+    ) => {
       if (state[depId]) {
         return state[depId];
       }
@@ -955,9 +992,17 @@ export default class TranspiledModule {
       const tModule = manager.getTranspiledModule(module, query);
 
       if (initiator) {
-        tModule.dependencies.add(this);
+        if (transpilation) {
+          tModule.transpilationDependencies.add(this);
+        } else {
+          tModule.dependencies.add(this);
+        }
       } else {
-        tModule.initiators.add(this);
+        if (transpilation) {
+          tModule.transpilationInitiators.add(this);
+        } else {
+          tModule.initiators.add(this);
+        }
       }
 
       return tModule;
@@ -973,10 +1018,10 @@ export default class TranspiledModule {
       this.initiators.add(loadModule(depId, true));
     });
     data.transpilationDependencies.forEach((depId: string) => {
-      this.transpilationDependencies.add(loadModule(depId));
+      this.transpilationDependencies.add(loadModule(depId, false, true));
     });
     data.transpilationInitiators.forEach((depId: string) => {
-      this.transpilationInitiators.add(loadModule(depId, true));
+      this.transpilationInitiators.add(loadModule(depId, true, true));
     });
 
     data.asyncDependencies.forEach((depId: string) => {
